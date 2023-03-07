@@ -4,7 +4,10 @@ import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.haotao.onemall.member.feign.CouponFeignService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,11 +28,37 @@ import com.haotao.common.utils.R;
  * @email mrhaotao@gmail.com
  * @date 2023-03-07 15:03:14
  */
+@RefreshScope
 @RestController
 @RequestMapping("member/member")
 public class MemberController {
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    CouponFeignService couponFeignService;
+
+    @Value("${testuser.name}")
+    private String name;
+
+    @Value("${testuser.age}")
+    private Integer age;
+
+    @RequestMapping("/test")
+    public R NacosConfigTest() {
+        return R.ok().put("name", name).put("age", age);
+    }
+
+    @RequestMapping("/coupons")
+    public R NacosDiscoveryTest() {
+        MemberEntity member = new MemberEntity();
+        member.setNickname("张三");
+
+        R memberCoupons = couponFeignService.memberCoupons();
+        memberCoupons.get("memberCoupons");
+
+        return R.ok().put("member", member).put("coupons", memberCoupons.get("coupons"));
+    }
 
     /**
      * 列表
